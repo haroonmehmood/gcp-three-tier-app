@@ -1,9 +1,27 @@
+# GKE Ingress reads the load balancer health check from a pod's readinessProbe
+# only when it first creates the backend — later probe edits are never synced.
+# A BackendConfig is the supported way to set it afterwards, and unlike a manual
+# `gcloud compute health-checks update` it is declarative and survives rebuilds.
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: wordpress-backendconfig
+spec:
+  healthCheck:
+    type: HTTP
+    # Static asset that answers 200 whether or not WordPress is installed.
+    # The default "/" answers 302 to the installer, which GKE treats as
+    # unhealthy, and the backend then serves 502.
+    requestPath: /wp-includes/images/blank.gif
+---
 apiVersion: v1
 kind: Service
 metadata:
   name: wordpress
   labels:
     app: wordpress
+  annotations:
+    cloud.google.com/backend-config: '{"default": "wordpress-backendconfig"}'
 spec:
   ports:
     - port: 80

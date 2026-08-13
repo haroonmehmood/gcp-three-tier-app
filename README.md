@@ -16,7 +16,7 @@ stood up, explored, and torn down without burning through credits.
                   ┌─────────┴──────────┐
                   │  GCE HTTP Ingress  │   one public IP
                   └─────────┬──────────┘
-             /hello         │        /wordpress
+             /hello         │        / (default)
         ┌───────────────────┴───────────────────┐
         ▼                                       ▼
 ┌──────────────────┐                  ┌──────────────────┐
@@ -105,8 +105,14 @@ PersistentVolumeClaim so data survives pod restarts. MySQL sits behind a
 headless Service and is never exposed outside the cluster. Assembled by
 `kustomization.yaml`, which generates the `mysql-pass` Secret.
 
-**`yaml-gke/ingress.yaml`** — a single GCE Ingress routing `/hello` to the
-frontend and `/wordpress` to WordPress.
+**`yaml-gke/ingress.yaml`** — a single GCE Ingress. `/hello` reaches the demo
+app; everything else falls through to WordPress as the default backend.
+
+WordPress is served from the root rather than a `/wordpress` prefix on purpose.
+It emits absolute redirects and absolute asset URLs, so behind a path prefix the
+installer redirects to `/wp-admin/install.php`, which then matches no rule and
+404s. Serving it at the root sidesteps that without needing `WP_HOME`/
+`WP_SITEURL` overrides and extra rules for every WordPress path.
 
 ## Prerequisites
 
@@ -179,6 +185,16 @@ The load balancer takes about 5 minutes to become healthy:
 kubectl get ingress ingress -w
 ```
 
+Then, using the address it reports:
+
+| URL | Serves |
+|---|---|
+| `http://<ingress-ip>/` | WordPress (installer on first visit) |
+| `http://<ingress-ip>/hello` | NGINX frontend proxying the Go backend |
+
+Note the `backends` annotation on the Ingress lags reality by a few minutes —
+trust an actual HTTP request over an `UNHEALTHY` reading.
+
 ### 6. Tear down
 
 Billing runs until you do this.
@@ -233,10 +249,12 @@ Running Terraform locally first is recommended; the pipeline applies with
 
 ## Known limitations
 
-- **Ingress paths are not rewritten.** Requests arrive at the backends with the
-  full path, so `/hello` reaches an NGINX image that serves at `/`, and
-  WordPress at `/wordpress` will render with broken asset URLs. Fixing it
-  properly needs either path rewriting or host-based routing.
+- **Only one app can own the root.** WordPress takes the default backend, so
+  adding a second path-prefixed app that emits absolute URLs would hit the same
+  problem WordPress did. Host-based routing is the real answer once more than
+  one app needs a root.
+- **No TLS.** The ingress serves plain HTTP. Anything real wants a
+  ManagedCertificate and an HTTPS redirect.
 - **`docker/` is not wired into anything.** The Kubernetes manifests pull public
   images directly and the Cloud Build pipeline never builds this directory. The
   Dockerfiles are kept as a reference for where custom images would go.

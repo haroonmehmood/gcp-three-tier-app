@@ -5,6 +5,16 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "gce"
 spec:
+  # WordPress emits absolute redirects and absolute asset URLs, so it cannot
+  # live behind a path prefix without also being told its own base URL. Serving
+  # it from the root avoids that entirely: /hello still reaches the demo app,
+  # and everything else — the installer, wp-admin, wp-content, wp-includes —
+  # falls through to WordPress and just works.
+  defaultBackend:
+    service:
+      name: wordpress
+      port:
+        number: 80
   rules:
   - http:
       paths:
@@ -13,12 +23,5 @@ spec:
         backend:
           service:
             name: frontend
-            port:
-              number: 80
-      - path: /wordpress
-        pathType: ImplementationSpecific
-        backend:
-          service:
-            name: wordpress
             port:
               number: 80
