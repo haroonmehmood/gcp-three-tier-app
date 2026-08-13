@@ -1,0 +1,9 @@
+.terraform.tfstate.lock.info
+terraform.tfstate
+terraform.tfstate.backup
+docker.sh
+.terraform
+.terraform.lock.hcl
+
+# Real database password — never commit. See mysql.env.example.
+yaml-gke/wordpress/mysql.env

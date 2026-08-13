@@ -1,0 +1,10 @@
+secretGenerator:
+- name: mysql-pass
+  # Read from an untracked local file instead of a committed literal, so the
+  # database password never lands in git. Copy mysql.env.example to mysql.env
+  # and put a real password in it before running `kubectl apply -k`.
+  envs:
+    - mysql.env
+resources:
+  - sql.yaml
+  - wordpress.yaml

@@ -1,0 +1,47 @@
+steps:
+  - name: 'hashicorp/terraform:1.0.0'
+    args:
+      - init
+      - '-input=false'
+  - name: 'hashicorp/terraform:1.0.0'
+    args:
+      - validate
+  - name: 'hashicorp/terraform:1.0.0'
+    args:
+      - plan
+      - '-input=false'
+      - '-out=tfplan'
+      - '-lock=false'
+  - name: 'hashicorp/terraform:1.0.0'
+    args:
+      - apply
+      - '-auto-approve'
+      - '-input=false'
+      - '-lock=false'
+  - name: gcr.io/cloud-builders/kubectl
+    args:
+      - apply
+      - '-f'
+      - yaml-gke/hello-app/deployment.yaml
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=three-tier-app'
+  - name: gcr.io/cloud-builders/kubectl
+    args:
+      - apply
+      - '-k'
+      - yaml-gke/wordpress
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=three-tier-app'
+  - name: gcr.io/cloud-builders/kubectl
+    args:
+      - apply
+      - '-f'
+      - yaml-gke/ingress.yaml
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=three-tier-app'
+timeout: 1200s
+options:
+  logging: CLOUD_LOGGING_ONLY
