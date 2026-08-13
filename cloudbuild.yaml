@@ -24,7 +24,7 @@ steps:
       - '-f'
       - yaml-gke/hello-app/deployment.yaml
     env:
-      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
+      - 'CLOUDSDK_COMPUTE_ZONE=us-east1-b'
       - 'CLOUDSDK_CONTAINER_CLUSTER=three-tier-app'
   - name: gcr.io/cloud-builders/kubectl
     args:
@@ -32,7 +32,7 @@ steps:
       - '-k'
       - yaml-gke/wordpress
     env:
-      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
+      - 'CLOUDSDK_COMPUTE_ZONE=us-east1-b'
       - 'CLOUDSDK_CONTAINER_CLUSTER=three-tier-app'
   - name: gcr.io/cloud-builders/kubectl
     args:
@@ -40,7 +40,7 @@ steps:
       - '-f'
       - yaml-gke/ingress.yaml
     env:
-      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
+      - 'CLOUDSDK_COMPUTE_ZONE=us-east1-b'
       - 'CLOUDSDK_CONTAINER_CLUSTER=three-tier-app'
 timeout: 1200s
 options:

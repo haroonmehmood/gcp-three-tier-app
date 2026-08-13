@@ -53,6 +53,13 @@ spec:
             secretKeyRef:
               name: mysql-pass
               key: password
+        # Without this the container starts with no application database, and
+        # WordPress fails with "Database Error" because it defaults to looking
+        # for a schema named "wordpress". Only takes effect on first init of an
+        # empty data directory — an existing PVC needs the database created by
+        # hand.
+        - name: MYSQL_DATABASE
+          value: wordpress
         ports:
         - containerPort: 3306
           name: mysql

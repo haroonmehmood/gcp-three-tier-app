@@ -18,7 +18,9 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: "gcr.io/google-samples/hello-frontend"
+          # Must be pinned to 1.0 — this image was never published with a
+          # "latest" tag, so an untagged reference fails with ImagePullBackOff.
+          image: "gcr.io/google-samples/hello-frontend:1.0"
           lifecycle:
             preStop:
               exec:

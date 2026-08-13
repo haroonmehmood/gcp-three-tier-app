@@ -1,27 +1,36 @@
 ########################################
 # CHANGE THIS BEFORE RUNNING TERRAFORM
 ########################################
-project_id = "CHANGE-ME-your-gcp-project-id"
+project_id = "three-tier-app-haroon"
 
 ########################################
 # Location
 ########################################
-region = "us-central1"
-zone   = "us-central1-a"
+# us-central1 was returning ZONE_RESOURCE_POOL_EXHAUSTED for e2-medium across
+# both zone -a and zone -c on 2026-08-13 — the shortage was region-wide for that
+# machine type, not a single bad zone. Moved to us-east1, which keeps the same
+# machine type and cost.
+region = "us-east1"
+zone   = "us-east1-b"
 
 # A ZONE here means a zonal cluster and the node counts below are totals.
 # Putting a REGION here would multiply every node count by the number of zones
 # in that region (us-central1 has 4), which is what made the original config
 # create 12 nodes and cost ~$900/month.
-cluster_location = "us-central1-a"
+cluster_location = "us-east1-b"
 
 ########################################
 # Network
 ########################################
 vpc_name        = "three-tier-vpc"
 auto_create_sub = false
-subnet_us_name  = "us-a"
-subnet_us_range = "10.0.0.0/24"
+subnet_us_name = "us-east-b"
+
+# Subnet CIDRs must not overlap anywhere within the VPC, not just within a
+# region. The orphaned us-central1 subnet still holds 10.0.0.0/24, so this one
+# uses a different range. Revert to 10.0.0.0/24 once that orphan is deleted, or
+# just leave it — the ranges are arbitrary.
+subnet_us_range = "10.1.0.0/24"
 
 ssh_firewall_rule_name = "three-tier-allow-ssh"
 

@@ -51,6 +51,15 @@ spec:
         env:
         - name: WORDPRESS_DB_HOST
           value: wordpress-mysql
+        # Both of these must be set explicitly. Current wordpress images ship a
+        # wp-config-docker.php whose DB_USER default is the literal placeholder
+        # "example username", so omitting this yields "Error establishing a
+        # database connection". Older images defaulted to root, which is why
+        # this manifest worked when it was written.
+        - name: WORDPRESS_DB_USER
+          value: root
+        - name: WORDPRESS_DB_NAME
+          value: wordpress
         - name: WORDPRESS_DB_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -59,6 +68,18 @@ spec:
         ports:
         - containerPort: 80
           name: wordpress
+        # GKE Ingress derives its load balancer health check from this probe,
+        # and that check only treats HTTP 200 as healthy. With no probe it
+        # defaults to "/", where WordPress answers 302 (redirect to the
+        # installer) and the backend is marked UNHEALTHY, serving 502s.
+        # blank.gif is a static asset that returns 200 whether or not WordPress
+        # has been installed yet.
+        readinessProbe:
+          httpGet:
+            path: /wp-includes/images/blank.gif
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 10
         volumeMounts:
         - name: wordpress-persistent-storage
           mountPath: /var/www/html

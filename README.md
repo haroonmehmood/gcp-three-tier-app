@@ -33,7 +33,7 @@ stood up, explored, and torn down without burning through credits.
                                       └──────────────────┘
 
         all running on: GKE zonal cluster, 2 x e2-medium
-        inside:         three-tier-vpc / subnet 10.0.0.0/24
+        inside:         three-tier-vpc / subnet 10.1.0.0/24
 ```
 
 A separate Ubuntu VM running Apache is also created. It is intentionally
@@ -68,7 +68,7 @@ independent of the cluster — a plain-IaaS counterpart to the Kubernetes side.
 | Resource | Detail |
 |---|---|
 | VPC | `three-tier-vpc`, no auto-subnets |
-| Subnet | `us-a`, `10.0.0.0/24`, `us-central1`, Private Google Access on |
+| Subnet | `us-east-b`, `10.1.0.0/24`, `us-east1`, Private Google Access on |
 | Firewall | TCP 22, source configurable via `ssh_source_ranges` |
 | Firewall | TCP 80 from anywhere |
 | Cloud Router + NAT | **optional**, created only when `enable_nat = true` |
@@ -137,7 +137,7 @@ gcloud services enable \
   iam.googleapis.com
 
 gcloud storage buckets create gs://<your-bucket> \
-  --location=us-central1 --uniform-bucket-level-access
+  --location=us-east1 --uniform-bucket-level-access
 gcloud storage buckets update gs://<your-bucket> --versioning
 ```
 
@@ -166,7 +166,7 @@ Takes roughly 10–15 minutes, mostly cluster creation.
 
 ```bash
 gcloud container clusters get-credentials three-tier-app \
-  --location us-central1-a --project <your-project-id>
+  --location us-east1-b --project <your-project-id>
 
 kubectl apply -f yaml-gke/hello-app/deployment.yaml
 kubectl apply -k yaml-gke/wordpress

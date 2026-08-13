@@ -3,7 +3,10 @@ terraform.tfstate
 terraform.tfstate.backup
 docker.sh
 .terraform
-.terraform.lock.hcl
+
+# Saved plan files can embed resource values — keep them local.
+tfplan
+*.tfplan
 
 # Real database password — never commit. See mysql.env.example.
 yaml-gke/wordpress/mysql.env
